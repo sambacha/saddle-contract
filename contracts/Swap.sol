@@ -571,24 +571,6 @@ contract Swap is OwnerPausable, ReentrancyGuard {
     }
 
     /**
-     * @notice Start ramping up or down A parameter towards given futureA and futureTime
-     * Checks if the change is too rapid, and commits the new A value only when it falls under
-     * the limit range.
-     * @param futureA the new A to ramp towards
-     * @param futureTime timestamp when the new A should be reached
-     */
-    function rampA(uint256 futureA, uint256 futureTime) external onlyOwner {
-        swapStorage.rampA(futureA, futureTime);
-    }
-
-    /**
-     * @notice Stop ramping A immediately. Reverts if ramp A is already stopped.
-     */
-    function stopRampA() external onlyOwner {
-        swapStorage.stopRampA();
-    }
-
-    /**
      * @notice Disables the guarded launch phase, removing any limits on deposit amounts and addresses
      */
     function disableGuard() external onlyOwner {

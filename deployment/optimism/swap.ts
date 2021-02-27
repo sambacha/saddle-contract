@@ -105,7 +105,7 @@ async function deploySwap(): Promise<void> {
     MathUtilsArtifact,
   )) as MathUtils
   await mathUtils.deployed()
-  console.log(" > Deployed MathUtils")
+  console.log(` > Deployed MathUtils: ${mathUtils.address}`)
   console.log(
     "deployed bytecode:",
     await ethers.provider.getCode(mathUtils.address),
@@ -120,7 +120,7 @@ async function deploySwap(): Promise<void> {
     },
   )) as SwapUtils
   await swapUtils.deployed()
-  console.log(" > Deployed SwapUtils")
+  console.log(` > Deployed SwapUtils: ${swapUtils.address}`)
   console.log(
     "deployed bytecode:",
     await ethers.provider.getCode(swapUtils.address),
