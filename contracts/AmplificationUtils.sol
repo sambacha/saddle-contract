@@ -1,5 +1,5 @@
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "./MetaSwapUtils.sol";
+import "./SwapUtils.sol";
 
 pragma solidity 0.6.12;
 
@@ -29,7 +29,7 @@ library AmplificationUtils {
      * @param futureTime_ timestamp when the new A should be reached
      */
     function rampA(
-        MetaSwapUtils.Swap storage self,
+        SwapUtils.Swap storage self,
         uint256 initialAPrecise,
         uint256 futureA_,
         uint256 futureTime_
@@ -79,9 +79,7 @@ library AmplificationUtils {
      * cannot be called for another 24 hours
      * @param self Swap struct to update
      */
-    function stopRampA(MetaSwapUtils.Swap storage self, uint256 currentA)
-        external
-    {
+    function stopRampA(SwapUtils.Swap storage self, uint256 currentA) external {
         require(self.futureATime > block.timestamp, "Ramp is already stopped");
 
         self.initialA = currentA;

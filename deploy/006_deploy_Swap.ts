@@ -13,6 +13,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     log: true,
     libraries: {
       SwapUtils: (await get("SwapUtils")).address,
+      AmplificationUtils: (await get("AmplificationUtils")).address,
     },
     skipIfAlreadyDeployed: true,
   })

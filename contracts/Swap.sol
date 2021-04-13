@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol
 import "./OwnerPausableUpgradeable.sol";
 import "./SwapUtils.sol";
 import "./MathUtils.sol";
+import "./AmplificationUtils.sol";
 
 /**
  * @title Swap - A StableSwap implementation in solidity.
@@ -31,6 +32,7 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeMath for uint256;
     using MathUtils for uint256;
     using SwapUtils for SwapUtils.Swap;
+    using AmplificationUtils for SwapUtils.Swap;
 
     // Struct storing data responsible for automatic market maker functionalities. In order to
     // access this data, this contract uses SwapUtils library. For more details, see SwapUtils.sol
@@ -156,7 +158,7 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
         }
 
         // Check _a, _fee, _adminFee, _withdrawFee parameters
-        require(_a < SwapUtils.MAX_A, "_a exceeds maximum");
+        require(_a < AmplificationUtils.MAX_A, "_a exceeds maximum");
         require(_fee < SwapUtils.MAX_SWAP_FEE, "_fee exceeds maximum");
         require(
             _adminFee < SwapUtils.MAX_ADMIN_FEE,
@@ -203,7 +205,7 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
      * @dev See the StableSwap paper for details
      * @return A parameter
      */
-    function getA() external view returns (uint256) {
+    function getA() external view virtual returns (uint256) {
         return swapStorage.getA();
     }
 
@@ -212,7 +214,7 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
      * @dev See the StableSwap paper for details
      * @return A parameter in its raw precision form
      */
-    function getAPrecise() external view returns (uint256) {
+    function getAPrecise() external view virtual returns (uint256) {
         return swapStorage.getAPrecise();
     }
 
@@ -221,7 +223,7 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
      * @param index the index of the token
      * @return address of the token at given index
      */
-    function getToken(uint8 index) public view returns (IERC20) {
+    function getToken(uint8 index) public view virtual returns (IERC20) {
         require(index < swapStorage.pooledTokens.length, "Out of range");
         return swapStorage.pooledTokens[index];
     }
@@ -232,7 +234,12 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
      * @param tokenAddress address of the token
      * @return the index of the given token address
      */
-    function getTokenIndex(address tokenAddress) public view returns (uint8) {
+    function getTokenIndex(address tokenAddress)
+        public
+        view
+        virtual
+        returns (uint8)
+    {
         uint8 index = tokenIndexes[tokenAddress];
         require(
             address(getToken(index)) == tokenAddress,
@@ -245,7 +252,12 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
      * @notice Return timestamp of last deposit of given address
      * @return timestamp of the last deposit made by the given address
      */
-    function getDepositTimestamp(address user) external view returns (uint256) {
+    function getDepositTimestamp(address user)
+        external
+        view
+        virtual
+        returns (uint256)
+    {
         return swapStorage.getDepositTimestamp(user);
     }
 
@@ -254,7 +266,12 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
      * @param index the index of the token
      * @return current balance of the pooled token at given index with token's native precision
      */
-    function getTokenBalance(uint8 index) external view returns (uint256) {
+    function getTokenBalance(uint8 index)
+        external
+        view
+        virtual
+        returns (uint256)
+    {
         require(index < swapStorage.pooledTokens.length, "Index out of range");
         return swapStorage.balances[index];
     }
@@ -263,7 +280,7 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
      * @notice Get the virtual price, to help calculate profit
      * @return the virtual price, scaled to the POOL_PRECISION_DECIMALS
      */
-    function getVirtualPrice() external view returns (uint256) {
+    function getVirtualPrice() external view virtual returns (uint256) {
         return swapStorage.getVirtualPrice();
     }
 
@@ -279,7 +296,7 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
         uint8 tokenIndexFrom,
         uint8 tokenIndexTo,
         uint256 dx
-    ) external view returns (uint256) {
+    ) external view virtual returns (uint256) {
         return swapStorage.calculateSwap(tokenIndexFrom, tokenIndexTo, dx);
     }
 
@@ -303,7 +320,7 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
         address account,
         uint256[] calldata amounts,
         bool deposit
-    ) external view returns (uint256) {
+    ) external view virtual returns (uint256) {
         return swapStorage.calculateTokenAmount(account, amounts, deposit);
     }
 
@@ -317,6 +334,7 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
     function calculateRemoveLiquidity(address account, uint256 amount)
         external
         view
+        virtual
         returns (uint256[] memory)
     {
         return swapStorage.calculateRemoveLiquidity(account, amount);
@@ -335,7 +353,7 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
         address account,
         uint256 tokenAmount,
         uint8 tokenIndex
-    ) external view returns (uint256 availableTokenAmount) {
+    ) external view virtual returns (uint256 availableTokenAmount) {
         (availableTokenAmount, ) = swapStorage.calculateWithdrawOneToken(
             account,
             tokenAmount,
@@ -355,6 +373,7 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
     function calculateCurrentWithdrawFee(address user)
         external
         view
+        virtual
         returns (uint256)
     {
         return swapStorage.calculateCurrentWithdrawFee(user);
@@ -365,7 +384,12 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
      * @param index Index of the pooled token
      * @return admin's token balance in the token's precision
      */
-    function getAdminBalance(uint256 index) external view returns (uint256) {
+    function getAdminBalance(uint256 index)
+        external
+        view
+        virtual
+        returns (uint256)
+    {
         return swapStorage.getAdminBalance(index);
     }
 
@@ -387,6 +411,7 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
         uint256 deadline
     )
         external
+        virtual
         nonReentrant
         whenNotPaused
         deadlineCheck(deadline)
@@ -409,6 +434,7 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
         uint256 deadline
     )
         external
+        virtual
         nonReentrant
         whenNotPaused
         deadlineCheck(deadline)
@@ -431,7 +457,13 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
         uint256 amount,
         uint256[] calldata minAmounts,
         uint256 deadline
-    ) external nonReentrant deadlineCheck(deadline) returns (uint256[] memory) {
+    )
+        external
+        virtual
+        nonReentrant
+        deadlineCheck(deadline)
+        returns (uint256[] memory)
+    {
         return swapStorage.removeLiquidity(amount, minAmounts);
     }
 
@@ -451,6 +483,7 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
         uint256 deadline
     )
         external
+        virtual
         nonReentrant
         whenNotPaused
         deadlineCheck(deadline)
@@ -480,6 +513,7 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
         uint256 deadline
     )
         external
+        virtual
         nonReentrant
         whenNotPaused
         deadlineCheck(deadline)
@@ -548,13 +582,13 @@ contract Swap is OwnerPausableUpgradeable, ReentrancyGuardUpgradeable {
      * @param futureTime timestamp when the new A should be reached
      */
     function rampA(uint256 futureA, uint256 futureTime) external onlyOwner {
-        swapStorage.rampA(futureA, futureTime);
+        swapStorage.rampA(swapStorage.getAPrecise(), futureA, futureTime);
     }
 
     /**
      * @notice Stop ramping A immediately. Reverts if ramp A is already stopped.
      */
     function stopRampA() external onlyOwner {
-        swapStorage.stopRampA();
+        swapStorage.stopRampA(swapStorage.getAPrecise());
     }
 }
