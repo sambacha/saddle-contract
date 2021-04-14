@@ -431,15 +431,6 @@ library SwapUtils {
     }
 
     /**
-     * @notice Get D, the StableSwap invariant, based on self Swap struct
-     * @param self Swap struct to read from
-     * @return The invariant, at the precision of the pool
-     */
-    function getD(Swap storage self) internal view returns (uint256) {
-        return getD(_xp(self), getAPrecise(self));
-    }
-
-    /**
      * @notice Given a set of balances and precision multipliers, return the
      * precision-adjusted balances.
      *
@@ -466,21 +457,6 @@ library SwapUtils {
             xp[i] = balances[i].mul(precisionMultipliers[i]);
         }
         return xp;
-    }
-
-    /**
-     * @notice Return the precision-adjusted balances of all tokens in the pool
-     * @param self Swap struct to read from
-     * @param balances array of balances to scale
-     * @return balances array "scaled" to the pool's precision, allowing
-     * them to be more easily compared.
-     */
-    function _xp(Swap storage self, uint256[] memory balances)
-        internal
-        view
-        returns (uint256[] memory)
-    {
-        return _xp(balances, self.tokenPrecisionMultipliers);
     }
 
     /**
